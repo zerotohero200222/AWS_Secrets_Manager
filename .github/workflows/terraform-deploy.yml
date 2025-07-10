@@ -13,7 +13,7 @@ jobs:
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      BUCKET_NAME: terraform-state-bharath-sm-why56
+      BUCKET_NAME: terraform-state-bharath-sm-why563
 
     defaults:
       run:
@@ -34,9 +34,11 @@ jobs:
         run: |
           if ! aws s3api head-bucket --bucket $BUCKET_NAME 2>/dev/null; then
             echo "Creating backend S3 bucket..."
-            aws s3api create-bucket \
-              --bucket $BUCKET_NAME \
-              --region us-east-1
+            CREATE_ARGS="--bucket $BUCKET_NAME --region us-east-1"
+            if [ "us-east-1" != "us-east-1" ]; then
+              CREATE_ARGS="$CREATE_ARGS --create-bucket-configuration LocationConstraint=us-east-1"
+            fi
+            aws s3api create-bucket $CREATE_ARGS
 
             aws s3api put-bucket-versioning \
               --bucket $BUCKET_NAME \
@@ -63,10 +65,11 @@ jobs:
           terraform_version: 1.6.0
 
       - name: ⚙️ Terraform Init
-        run: terraform init \
-          -backend-config="bucket=$BUCKET_NAME" \
-          -backend-config="key=secrets/dev/terraform.tfstate" \
-          -backend-config="region=us-east-1"
+        run: |
+          terraform init \
+            -backend-config="bucket=$BUCKET_NAME" \
+            -backend-config="key=secrets/dev/terraform.tfstate" \
+            -backend-config="region=us-east-1"
 
       - name: 🔍 Terraform Plan
         run: terraform plan -var-file="environments/dev.tfvars" -out=tfplan
@@ -82,11 +85,11 @@ jobs:
           {
             echo "## 💰 Estimated Monthly Costs (Dev Environment)"
             echo ""
-            echo "| Resource         | Quantity | Pricing (approx) | Total Cost |"
-            echo "|------------------|----------|------------------|------------|"
-            echo "| Secrets Manager  | 1        | ~$0.40/month     | ~$0.40     |"
+            echo "| Resource         | Quantity | Price Estimate  | Monthly Cost |"
+            echo "|------------------|----------|------------------|---------------|"
+            echo "| Secrets Manager  | 1        | ~$0.40/month     | ~$0.40        |"
             echo ""
-            echo "**Total Estimate:** ~$0.40/month"
+            echo "**Total Estimated Cost:** ~$0.40/month"
           } >> $GITHUB_STEP_SUMMARY
 
   apply:
@@ -118,10 +121,11 @@ jobs:
           terraform_version: 1.6.0
 
       - name: ⚙️ Terraform Init
-        run: terraform init \
-          -backend-config="bucket=terraform-state-bharath-sm-why56" \
-          -backend-config="key=secrets/dev/terraform.tfstate" \
-          -backend-config="region=us-east-1"
+        run: |
+          terraform init \
+            -backend-config="bucket=terraform-state-bharath-sm-why563" \
+            -backend-config="key=secrets/dev/terraform.tfstate" \
+            -backend-config="region=us-east-1"
 
       - name: 📥 Download Plan Artifact
         uses: actions/download-artifact@v4
@@ -131,5 +135,6 @@ jobs:
 
       - name: 🚀 Terraform Apply
         run: terraform apply tfplan
+
 
 
