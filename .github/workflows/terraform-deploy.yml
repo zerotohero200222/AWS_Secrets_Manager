@@ -119,7 +119,7 @@ jobs:
           terraform_version: 1.6.0
 
       - name: ⚙️ Terraform Init
-        run: terraform init -backend-config="bucket=terraform-state-pratyushaa-ebs-why2" \
+        run: terraform init -backend-config="terraform-state-bharath-SM-why563" \
                              -backend-config="key=secrets/dev/terraform.tfstate" \
                              -backend-config="region=us-east-1"
 
