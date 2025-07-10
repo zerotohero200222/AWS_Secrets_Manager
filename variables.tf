@@ -1,6 +1,7 @@
 variable "aws_region" {
-  type    = string
-  default = "us-east-2"
+  type        = string
+  description = "AWS region to deploy the resources"
+  default     = "us-east-2"
 }
 
 variable "secret_name" {
@@ -22,4 +23,13 @@ variable "secret_value" {
 variable "environment" {
   type        = string
   description = "Deployment environment: dev/test/prod."
+}
+
+# outputs.tf
+output "secret_name" {
+  value = aws_secretsmanager_secret.app_secret.name
+}
+
+output "secret_arn" {
+  value = aws_secretsmanager_secret.app_secret.arn
 }
