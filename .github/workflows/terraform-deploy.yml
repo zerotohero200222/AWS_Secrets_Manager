@@ -13,7 +13,7 @@ jobs:
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      BUCKET_NAME: terraform-state-pratyushaa-ebs-why2
+      BUCKET_NAME: terraform-state-bharath-SM-why563
 
     defaults:
       run:
