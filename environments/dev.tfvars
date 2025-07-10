@@ -1,0 +1,5 @@
+secret_name        = "myapp-secret"
+secret_description = "My application dev secret"
+secret_value       = "s3cr3t-dev-123"
+environment        = "dev"
+aws_region         = "us-east-2"
