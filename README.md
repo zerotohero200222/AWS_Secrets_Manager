@@ -1,96 +1,112 @@
-# AWS_Secrets_Manager
+# 🚀 AWS Secrets Manager Terraform Deployment
+
+This repository provisions AWS Secrets Manager secrets using Terraform. It features a fully automated CI/CD pipeline powered by GitHub Actions, including:
+
+- Cost estimation before applying changes.
+- Manual approval for applying changes.
+- Remote state storage using S3 backend.
+- Environment-specific configurations (Dev, UAT, Prod).
+
 ---
 
-# AWS Secrets Manager Deployment using Terraform and GitHub Actions
+## 📁 Project Structure
 
-## Overview
+The project is organized as follows:
 
-This project demonstrates how to deploy AWS Secrets Manager resources using Terraform, with automation handled through GitHub Actions. It is structured to support reusable environments (such as dev, test, and prod) using variable files, and is designed for safe, modular deployment without automated destruction.
+- `main.tf` — Defines AWS Secrets Manager resources.
+- `provider.tf` — Configures the AWS provider and Terraform version.
+- `variables.tf` — Input variable declarations.
+- `outputs.tf` — Outputs such as the secret name and ARN.
+- `backend.tf` — Configures remote state using an S3 backend.
+- `environments/` — Environment-specific `.tfvars` files.
+- `.github/workflows/terraform-deploy.yml` — GitHub Actions CI/CD workflow.
 
-## What is AWS Secrets Manager?
+---
 
-AWS Secrets Manager is a service for securely storing, managing, and retrieving sensitive information such as database credentials, API keys, and other secrets. It supports secret rotation, access control, auditing, and integrates with AWS services like Lambda and RDS.
+## 🔧 Features
 
+- Supports multiple environments (Dev, UAT, Prod).
+- Secrets are generated with a random suffix for uniqueness.
+- Remote state management via S3 with versioning and encryption.
+- Terraform plan output is uploaded as an artifact.
+- Cost estimate summary is displayed after the plan step.
+- Apply step requires manual approval for secure deployment.
 
-## Purpose of Each File
+---
 
-* `main.tf`: Contains the main Terraform configuration for deploying the secret.
-* `providers.tf`: Configures Terraform to use AWS as the provider.
-* `variables.tf`: Declares all configurable inputs used in the module.
-* `variables.tfvars`: Contains values for a specific environment such as dev.
-* `outputs.tf`: Outputs useful information after deployment (like secret ARN).
-* `.github/workflows/terraform-deploy.yml`: GitHub Actions CI/CD workflow for deploying infrastructure automatically.
+## 🚀 GitHub Actions Workflow
 
-## GitHub Actions Workflow
+This project includes a two-stage deployment workflow:
 
-The CI/CD pipeline is triggered manually through GitHub Actions and performs the following tasks:
+1. **Plan Job**
+   - Runs on every push to `main`.
+   - Initializes Terraform and runs `terraform plan`.
+   - Displays a cost estimation summary.
+   - Uploads the plan as an artifact.
 
-1. Checks out the repository.
-2. Sets up the Terraform environment.
-3. Authenticates to AWS using credentials stored in GitHub Secrets.
-4. Initializes Terraform configuration.
-5. Plans the changes.
-6. Applies the changes to deploy resources to AWS.
+2. **Apply Job**
+   - Requires manual approval.
+   - Downloads the plan artifact and runs `terraform apply`.
 
-Note: The workflow is limited to the apply operation. It does not include any automated destroy functionality to prevent accidental deletion of secrets.
+Both jobs use AWS credentials stored securely as GitHub Secrets.
 
-## AWS Authentication
+---
 
-To authenticate with AWS, the GitHub repository must be configured with the following secrets:
+## 🔐 Required GitHub Secrets
 
-* `AWS_ACCESS_KEY_ID`
-* `AWS_SECRET_ACCESS_KEY`
+To authenticate with AWS, set the following secrets in your repository:
 
-These should have the necessary IAM permissions to provision Secrets Manager and related services.
+- `AWS_ACCESS_KEY_ID`
+- `AWS_SECRET_ACCESS_KEY`
 
-## Variable Management
+---
 
-All environment-specific values are stored in a `.tfvars` file. This makes the infrastructure modular and reusable across environments. For example:
+## 🌍 Environments
 
-```hcl
-secret_name  = "dev-api-key"
-secret_value = "secure-api-token"
-environment  = "dev"
-```
+Each environment (Dev, UAT, Prod) has its own `.tfvars` file located in the `environments/` folder. These files define:
 
-To use this setup for different environments, simply create a new `variables.tfvars` file (e.g., `prod.tfvars`) and adjust the values accordingly.
+- AWS region
+- Secret name
+- Secret value
+- Secret description
+- Deployment environment label
 
-## Deployment Instructions
+You can change or add environments by creating additional `.tfvars` files and updating the workflow if needed.
 
-1. Clone this repository to your local system.
+---
 
-2. Configure GitHub repository secrets:
+## 🪣 S3 Backend
 
-   * Go to GitHub > Settings > Secrets and variables > Actions
-   * Add `AWS_ACCESS_KEY_ID`
-   * Add `AWS_SECRET_ACCESS_KEY`
+Terraform state is stored in an S3 bucket to enable collaboration and preserve state across runs. The backend is:
 
-3. Modify the `variables.tfvars` file with your secret name, value, and environment.
+- Encrypted using AES256
+- Versioned for safety
+- Created dynamically by the CI/CD pipeline if it doesn’t already exist
 
-4. Navigate to the Actions tab in GitHub and trigger the Terraform Deploy workflow manually.
+---
 
-## Outputs
+## 📈 Cost Estimation
 
-After deployment, the pipeline will provide outputs such as:
+After every plan, a cost summary is displayed directly in the GitHub Actions step summary. This helps reviewers understand the approximate charges before applying.
 
-* The name of the secret
-* The ARN (Amazon Resource Name) of the secret
+---
 
-These outputs can be referenced in other modules or used by applications that require access to secrets.
+## 📦 Deployment Process
 
-## Best Practices
+1. Push your changes to the `main` branch.
+2. GitHub Actions will run the plan job and show the cost estimation.
+3. A team lead or reviewer must approve the apply job manually in the `Actions` tab.
+4. Once approved, Terraform will apply the planned changes using the stored plan artifact.
 
-* Do not store sensitive data (like actual secrets) in plaintext or in the version control system.
-* Use strong naming conventions for secrets per environment.
-* Restrict IAM roles and policies to limit access to Secrets Manager.
-* Regularly rotate secrets where applicable.
+---
 
-## Extensions
+## 🧪 Testing & Validation
 
-This setup can be extended to include:
+- Validates Terraform syntax and backend configuration.
+- Ensures idempotent and repeatable infrastructure deployments.
+- Secrets are tagged and version-controlled.
 
-* Automatic secret rotation with AWS Lambda
-* Integration with application environments (ECS, EKS, Lambda)
-* Versioned secrets and multi-region replication
+---
+
 
 
